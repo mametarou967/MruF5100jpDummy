@@ -166,12 +166,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     }
 
                 }
-                else if (byteCheckResult == ByteCheckResult.NgNoStx)
-                {
-                    // 先頭をdequeueして終了
-                    receiveDataQueue.Dequeue();
-
-                }
                 else if (
                     (byteCheckResult == ByteCheckResult.NgNoByte) ||
                     (byteCheckResult == ByteCheckResult.NgHasNoLengthField) ||
@@ -181,8 +175,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     break;
                 }
                 else if (
-                    (byteCheckResult == ByteCheckResult.NgNoEtx) ||
-                    (byteCheckResult == ByteCheckResult.NgBccError))
+                    (byteCheckResult == ByteCheckResult.NgCrcError))
                 {
                     // サイズを調べる
                     var size = CommandGenerator.GetCommandByteLength(receiveDataQueue.ToArray());

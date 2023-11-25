@@ -14,16 +14,12 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         Ok,
         [StringValue("データなし")]
         NgNoByte,
-        [StringValue("先頭がSTXでない")]
-        NgNoStx,
         [StringValue("messageの長さフィールドを持っていない(3バイトより短い)")]
         NgHasNoLengthField,
         [StringValue("長さフィールド分のメッセージを持っていない")]
         NgMessageIncompleted,
-        [StringValue("終端がETXでない")]
-        NgNoEtx,
-        [StringValue("BCCエラー")]
-        NgBccError,
+        [StringValue("CRCエラー")]
+        NgCrcError,
     }
 
 
@@ -34,36 +30,34 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         {
             if (data.Length == 0) return ByteCheckResult.NgNoByte;
 
-            if (data[0] != 0x02 /* STX */ ) return ByteCheckResult.NgNoStx;
+            if (data.Length < 6) return ByteCheckResult.NgHasNoLengthField;
 
-            if (data.Length < 3) return ByteCheckResult.NgHasNoLengthField;
+            var messageLength = (data[5] << 8) | data[4];
 
-            var messageLength = (data[1] << 8) | data[2];
+            if (data.Length < 16 + messageLength + 2) return ByteCheckResult.NgMessageIncompleted;
 
-            if (data.Length < messageLength + 5) return ByteCheckResult.NgMessageIncompleted;
+            ushort receiveCrc = (ushort)(data[16 + messageLength] + (data[16 + messageLength + 1] << 8));
 
-            if (data[3 + messageLength] != 0x03 /* ETX */ ) return ByteCheckResult.NgNoEtx;
+            byte[] crcTarget = new byte[16 + messageLength];
 
-            byte bcc = 0;
-            for (int index = 1; index < (3 + messageLength + 1); index++)
-            {
-                bcc ^= data[index];
-            }
+            Array.Copy(data, 0, crcTarget, 0, 16 + messageLength);
 
-            if (data[3 + messageLength + 1] != bcc) return ByteCheckResult.NgBccError;
+            var calcCrc = Common.Common.CalculateCrc(crcTarget);
+
+            if (receiveCrc != calcCrc) return ByteCheckResult.NgCrcError;
 
             return ByteCheckResult.Ok;
         }
 
         public static int? GetCommandByteLength(byte[] data)
         {
-            if (data.Length < 3) return null;
+            if (data.Length < 6) return null;
 
-            var messageLength = (data[1] << 8) | data[2];
+            var messageLength = (data[5] << 8) | data[4];
 
-            if (data.Length < messageLength + 5) return null;
+            if (data.Length < 16 + messageLength + 2) return null;
 
-            return messageLength + 5;
+            return 16 + messageLength + 2;
         }
 
         public static Command CommandGenerate(byte[] data)

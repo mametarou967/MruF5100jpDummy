@@ -43,6 +43,27 @@ namespace MruF5100jpDummy.Model.Common
                     return value.PadLeft(byteCount);
             }
         }
+
+        static public ushort CalculateCrc(byte[] buffer)
+        {
+            ushort crc = 0xffff;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                crc ^= buffer[i];
+                for (int j = 0; j < 8; j++)
+                {
+                    if ((crc & 1) != 0)
+                    {
+                        crc = (ushort)((crc >> 1) ^ 0x8408);
+                    }
+                    else
+                    {
+                        crc >>= 1;
+                    }
+                }
+            }
+            return (ushort)~crc;
+        }
     }
 
     // 項目属性の列挙体

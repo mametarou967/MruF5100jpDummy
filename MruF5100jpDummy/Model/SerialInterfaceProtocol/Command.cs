@@ -89,7 +89,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             data_tmp1.Add(0x00);                  // Reserve
             data_tmp1.AddRange(CommandPayloadByteArray);
 
-            var crc = CalculateCrc(data_tmp1.ToArray());
+            var crc = Common.Common.CalculateCrc(data_tmp1.ToArray());
             List<byte> data = new List<byte>();
             var crcLower = (byte)(crc % 256);
             var crcUpper = (byte)(crc / 256);
@@ -147,26 +147,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             return result;
         }
 
-        public static ushort CalculateCrc(byte[] buffer)
-        {
-            ushort crc = 0xffff;
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                crc ^= buffer[i];
-                for (int j = 0; j < 8; j++)
-                {
-                    if ((crc & 1) != 0)
-                    {
-                        crc = (ushort)((crc >> 1) ^ 0x8408);
-                    }
-                    else
-                    {
-                        crc >>= 1;
-                    }
-                }
-            }
-            return (ushort)~crc;
-        }
 
     }
 }
