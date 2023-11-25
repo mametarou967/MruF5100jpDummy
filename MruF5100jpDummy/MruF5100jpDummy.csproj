@@ -72,6 +72,10 @@
     <Compile Include="Model\Logging\LogWriter.cs" />
     <Compile Include="Model\Logging\LogWriteRequester.cs" />
     <Compile Include="Model\SerialCom\SerialCom.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\StopInvResponse.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\StopInvRequest.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\StartInvResponse.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\StartInvRequest.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\Command.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\CommandGenerator.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\DummyCommand.cs" />
@@ -81,6 +85,7 @@
     <Compile Include="Model\SerialInterfaceProtocol\CloseRdResponse.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\OpenRdResponse.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\SerialInterfaceProtocolManager.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\TagInfo.cs" />
     <Compile Include="Model\SerialPortManager\SerialPortManager.cs" />
     <Compile Include="ViewModels\ComboBoxViewModel.cs" />
     <Compile Include="ViewModels\LogItem.cs" />

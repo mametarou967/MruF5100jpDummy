@@ -176,7 +176,19 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     command as CloseRdRequest
                 ); ;
             }
-                    
+            else if (command.CommandType == CommandType.StartInv)
+            {
+                return CommandGenerator.ResponseGenerate(
+                    command as StartInvRequest
+                ); ;
+            }
+            else if (command.CommandType == CommandType.StopInv)
+            {
+                return CommandGenerator.ResponseGenerate(
+                    command as StopInvRequest
+                ); ;
+            }
+
 
             return new DummyCommand();
         }

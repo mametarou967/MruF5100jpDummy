@@ -62,12 +62,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
         public static Command CommandGenerate(byte[] data)
         {
-            // フォーマットはあっている前提
-            var idTanmatsuAddress = ((data[3] - 0x30) * 10) + (data[4] - 0x30);
-
-            var nyuutaishitsuHoukou = (NyuutaishitsuHoukou)data[5] - 0x30;
-
-
             byte commandType = data[3];
             byte denbunType = data[1];
 
@@ -93,22 +87,58 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     return new CloseRdResponse();
                 }
             }
+            else if (commandType == (byte)CommandType.StartInv)
+            {
+                if (denbunType == (byte)DenbunType.Request)
+                {
+                    return new StartInvRequest();
+                }
+                else if (denbunType == (byte)DenbunType.Response)
+                {
+                    return new StartInvResponse();
+                }
+            }
+            else if (commandType == (byte)CommandType.StopInv)
+            {
+                if (denbunType == (byte)DenbunType.Request)
+                {
+                    return new StopInvRequest();
+                }
+                else if (denbunType == (byte)DenbunType.Response)
+                {
+                    return new StopInvResponse();
+                }
+            }
 
             return new DummyCommand();
         }
 
         public static OpenRdResponse ResponseGenerate(
-            OpenRdRequest ninshouYoukyuuCommand
+            OpenRdRequest openRdRequest
         )
         {
             return new OpenRdResponse();
         }
 
         public static CloseRdResponse ResponseGenerate(
-            CloseRdRequest ninshouYoukyuuCommand
+            CloseRdRequest closeRdRequest
         )
         {
             return new CloseRdResponse();
+        }
+
+        public static StartInvResponse ResponseGenerate(
+            StartInvRequest startInvRequest
+        )
+        {
+            return new StartInvResponse();
+        }
+
+        public static StopInvResponse ResponseGenerate(
+            StopInvRequest startInvRequest
+        )
+        {
+            return new StopInvResponse();
         }
 
         static string ExtractAndConvert(byte[] byteArray, int startIndex, int length)
@@ -134,19 +164,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
         static private int FixIdTanmatsuAddress(int idTanmatsuAddress, bool idtAdrError) =>
             (idtAdrError) ? idTanmatsuAddress + 1 : idTanmatsuAddress;
-
-        static private NyuutaishitsuHoukou FixNyuutaishitsuHoukou(NyuutaishitsuHoukou nyuutaishitsuHoukou, bool inoutDirError)
-        {
-            NyuutaishitsuHoukou fixNyuutaishitsuHoukou = nyuutaishitsuHoukou;
-
-            if (inoutDirError)
-            {
-                if (fixNyuutaishitsuHoukou == NyuutaishitsuHoukou.Nyuushitsu) fixNyuutaishitsuHoukou = NyuutaishitsuHoukou.Taishitsu;
-                else fixNyuutaishitsuHoukou = NyuutaishitsuHoukou.Nyuushitsu;
-            }
-
-            return fixNyuutaishitsuHoukou;
-        }
 
         static private string FixRiyoushaId(string riyoushaId, bool riyoushaIdError)
         {

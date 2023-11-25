@@ -13,6 +13,10 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         OpenRd = 0x00,
         [StringValue("CloseRdコマンド")]
         CloseRd = 0x01,
+        [StringValue("StartInvコマンド")]
+        StartInv = 0x20,
+        [StringValue("StopInvコマンド")]
+        StopInv = 0x21,
     }
 
     public enum DenbunType
@@ -27,21 +31,8 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         Special = 0x53,
     }
 
-    public enum NyuutaishitsuHoukou
-    {
-        [StringValue("入室")]
-        Nyuushitsu = 1,
-        [StringValue("退室")]
-        Taishitsu = 2
-    }
-
     public abstract class Command : ICommand
     {
-        public bool BccError { get; private set; }
-
-        public int IdTanmatsuAddress { get; private set; }
-        public NyuutaishitsuHoukou NyuutaishitsuHoukou { get; private set; }
-
         public Command()
         {
         }
@@ -49,8 +40,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public abstract CommandType CommandType { get; }
 
         public abstract DenbunType DenbunType { get; }
-
-        public abstract int dataSize { get; }
 
         public abstract byte Result { get; }
 
@@ -71,8 +60,8 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public byte[] ByteArray()
         {
             List<byte> data_tmp1 = new List<byte>();
-            var dataSizeLower = (byte)(dataSize % 256);
-            var dataSizeUpper = (byte)(dataSize / 256);
+            var dataSizeLower = (byte)(CommandPayloadByteArray.Length % 256);
+            var dataSizeUpper = (byte)(CommandPayloadByteArray.Length / 256);
             data_tmp1.Add(0x00);                 // 電文のバージョン番号 (0x00)固定
             data_tmp1.Add((byte)DenbunType);     // 電文識別子 0x50:リクエスト 0x51:レスポンス
             data_tmp1.Add(0x00);                 // ID (0x00)固定

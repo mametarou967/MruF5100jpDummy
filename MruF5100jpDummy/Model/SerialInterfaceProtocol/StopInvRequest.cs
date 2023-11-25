@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MruF5100jpDummy.Model.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 {
-    public class OpenRdRequest : Command
+    public class StopInvRequest : Command
     {
         public string Id { get; private set; }
 
-        public override CommandType CommandType => CommandType.OpenRd;
+        public override CommandType CommandType => CommandType.StopInv;
 
         public override DenbunType DenbunType => DenbunType.Request;
 
@@ -20,8 +21,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
         protected override string CommadString => "";
 
-        public OpenRdRequest()
-        {
-        }
+        public StopInvRequest(){}
     }
 }

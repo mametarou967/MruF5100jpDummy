@@ -12,8 +12,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
         public override DenbunType DenbunType => DenbunType.Request;
 
-        public override int  dataSize => 0;
-
         public override byte Result => 0;
 
         protected override byte[] CommandPayloadByteArray => new byte[] { };
