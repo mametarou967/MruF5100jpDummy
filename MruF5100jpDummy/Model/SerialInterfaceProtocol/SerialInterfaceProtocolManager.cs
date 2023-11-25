@@ -120,48 +120,17 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
                     logWriteRequester.WriteRequest(LogLevel.Info, "[受信] " + receiveCommand.ToString());
 
-                    bool isResponseEnable = true;
-                    uint outouJikanMs = 500;
-                    var idtAdrError = false;
-                    var inoutDirError = false;
-                    var riyoushaIdError = false;
-                    var bccError = false;
-
-                    // if (receiveCommand.CommandType == CommandType.NinshouYoukyuu) isResponseEnable = IsResponseEnableYoukyuuOutou;
-                    // else if (receiveCommand.CommandType == CommandType.NinshouJoutaiYoukyuu) isResponseEnable = IsResponseEnableYoukyuuJoutaiOutou;
-
-                    if (receiveCommand.CommandType == CommandType.OpenRd)
+                    if (receiveCommand.DenbunType == DenbunType.Request)
                     {
-                        outouJikanMs = YoukyuuOutouJikanMs;
-                        idtAdrError = IsIdtAdrErrorYoukyuuOutou;
-                        inoutDirError = IsInoutDirErrorYoukyuuOutou;
-                        riyoushaIdError = IsRiyoushaIdErrorYoukyuuOutou;
-                        bccError = IsBccErrorYoukyuuOutou;
+                        var responseCommand = ResponseGenerate(receiveCommand);
 
-                    }
-
-                    if (idtAdrError) logWriteRequester.WriteRequest(LogLevel.Warning, $"ID端末アドレスエラー設定を反映して応答コマンドを作成します");
-                    if (inoutDirError) logWriteRequester.WriteRequest(LogLevel.Warning, $"ID端末入退室方向エラー設定を反映して応答コマンドを作成します");
-                    if (riyoushaIdError) logWriteRequester.WriteRequest(LogLevel.Warning, $"利用者IDエラー設定を反映して応答コマンドを作成します");
-                    if (bccError) logWriteRequester.WriteRequest(LogLevel.Warning, $"BCCエラー設定を反映して応答コマンドを作成します");
-
-                    var responseCommand = ResponseGenerate(receiveCommand, idtAdrError, inoutDirError, riyoushaIdError, bccError);
-
-                    if (responseCommand.CommandType != CommandType.DummyCommand)
-                    {
-                        if (isResponseEnable)
+                        if (responseCommand.CommandType != CommandType.DummyCommand)
                         {
                             // 有効な応答コマンドが生成されているので任意の時間経過後応答する
                             Task.Run(async () =>
                             {
-                                await Task.Delay(TimeSpan.FromMilliseconds(outouJikanMs));
-
                                 Send(responseCommand);
                             });
-                        }
-                        else
-                        {
-                            logWriteRequester.WriteRequest(LogLevel.Warning, $"応答設定が行われていないため{receiveCommand.CommandType} のコマンドは送信しません");
                         }
                     }
 
@@ -194,11 +163,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         }
 
         ICommand ResponseGenerate(
-            ICommand command,
-            bool idtAdrError = false,
-            bool inoutDirError = false,
-            bool riyoushaIdError = false,
-            bool bccError = false)
+            ICommand command)
         {
             if (command.CommandType == CommandType.OpenRd)
             {
@@ -206,11 +171,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                 var ninshouYoukyuuOutouCommand = CommandGenerator.ResponseGenerate(
                     command as OpenRdRequest,
                     YoukyuuOutouKekka,
-                    YoukyuuJuriNgSyousai.Nashi, // 一旦固定
-                    idtAdrError,
-                    inoutDirError,
-                    riyoushaIdError,
-                    bccError
+                    YoukyuuJuriNgSyousai.Nashi // 一旦固定
                     );
 
                 return ninshouYoukyuuOutouCommand;

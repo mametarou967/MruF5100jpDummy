@@ -24,20 +24,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public YoukyuuJuriNgSyousai YoukyuuJuriNgSyousai { get; private set; }
         public string Id { get; private set; }
 
-        protected override byte[] CommandPayloadByteArray
-        {
-            get
-            {
-                List<byte> data = new List<byte>();
-
-                data.Add((byte)(0x30 + YoukyuuOutouKekka));
-                data.Add((byte)(0x30 + YoukyuuJuriNgSyousai)); // 仮固定
-                data.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(Id.Length)));
-                data.AddRange(ConvertDigitsToAsciiArray(Id));
-
-                return data.ToArray();
-            }
-        }
+        protected override byte[] CommandPayloadByteArray => new byte[0];
 
         public override CommandType CommandType => CommandType.OpenRd;
 

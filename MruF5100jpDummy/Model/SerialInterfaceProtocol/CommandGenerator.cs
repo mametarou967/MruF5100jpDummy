@@ -65,14 +65,22 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             // フォーマットはあっている前提
             var idTanmatsuAddress = ((data[3] - 0x30) * 10) + (data[4] - 0x30);
 
-            var commandType = ((data[6] - 0x30) * 10) + (data[7] - 0x30);
             var nyuutaishitsuHoukou = (NyuutaishitsuHoukou)data[5] - 0x30;
 
-            if (commandType == (int)CommandType.OpenRd)
-            {
-                var idLength = ((data[8] - 0x30) * 10) + (data[9] - 0x30);
 
-                return new OpenRdRequest();
+            byte commandType = data[3];
+            byte denbunType = data[1];
+
+            if (commandType == (byte)CommandType.OpenRd)
+            {
+                if (denbunType == (byte)DenbunType.Request)
+                {
+                    return new OpenRdRequest();
+                }
+                else if (denbunType == (byte)DenbunType.Response)
+                {
+                    return new OpenRdResponse();
+                }
             }
 
             return new DummyCommand();

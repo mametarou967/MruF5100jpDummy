@@ -42,7 +42,7 @@ namespace MruF5100jpDummy.ViewModels
             // コマンドの準備
             SerialStartButton = new DelegateCommand(SerialStartButtonExecute);
             SerialStopButton = new DelegateCommand(SerialStopButtonExecute);
-            NinshouYoukyuuCommandTestSendButton = new DelegateCommand(NinshouYoukyuuCommandTestSendButtonExecute);
+            OpenRdSendButton = new DelegateCommand(OpenRdSendSendButtonExecute);
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
             IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
@@ -95,7 +95,7 @@ namespace MruF5100jpDummy.ViewModels
             serialInterfaceProtocolManager.ComStop();
         }
 
-        public DelegateCommand NinshouYoukyuuCommandTestSendButton { get; }
+        public DelegateCommand OpenRdSendButton { get; }
 
         // 認証要求関係
 
@@ -107,7 +107,7 @@ namespace MruF5100jpDummy.ViewModels
             set { SetProperty(ref _ninshouYoukyuuRiyoushaId, value); }
         }
 
-        private void NinshouYoukyuuCommandTestSendButtonExecute()
+        private void OpenRdSendSendButtonExecute()
         {
             serialInterfaceProtocolManager.Send(new OpenRdRequest());
         }

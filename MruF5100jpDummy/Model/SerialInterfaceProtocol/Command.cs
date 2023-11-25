@@ -59,7 +59,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         protected abstract string CommadString { get; }
 
         private string BaseHeaderString =>
-            Common.Common.PaddingInBytes($"CMD: {CommandType.GetStringValue()}", PadType.Char, 36);
+            Common.Common.PaddingInBytes($"CMD: {CommandType.GetStringValue()} {DenbunType.GetStringValue()}", PadType.Char, 36);
 
         private string BaseFooterString => "";
 
