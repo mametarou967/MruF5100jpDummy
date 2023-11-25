@@ -74,60 +74,18 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             var commandType = ((data[6] - 0x30) * 10) + (data[7] - 0x30);
             var nyuutaishitsuHoukou = (NyuutaishitsuHoukou)data[5] - 0x30;
 
-            if (commandType == (int)CommandType.NinshouYoukyuu)
+            if (commandType == (int)CommandType.OpenRd)
             {
                 var idLength = ((data[8] - 0x30) * 10) + (data[9] - 0x30);
 
-                return new NinshouYoukyuuCommand(
-                    idTanmatsuAddress,
-                    nyuutaishitsuHoukou,
-                    ExtractAndConvert(data, 10, idLength)
-                    );
-            }
-            else if (commandType == (int)CommandType.NinshouYoukyuuOutou)
-            {
-                var youkyuuOutouKekka = (YoukyuuOutouKekka)(data[8] - 0x30);
-                var youkyuuJuriNgSyousai = (YoukyuuJuriNgSyousai)(data[9] - 0x30);
-                var idLength = ((data[10] - 0x30) * 10) + (data[11] - 0x30);
-
-                return new NinshouYoukyuuOutouCommand(
-                    idTanmatsuAddress,
-                    nyuutaishitsuHoukou,
-                    youkyuuOutouKekka,
-                    youkyuuJuriNgSyousai,
-                    ExtractAndConvert(data, 12, idLength)
-                    );
-            }
-            else if (commandType == (int)CommandType.NinshouJoutaiYoukyuu)
-            {
-                return new NinshouJoutaiYoukyuuCommand(
-                    idTanmatsuAddress,
-                    nyuutaishitsuHoukou
-                    );
-            }
-            else if (commandType == (int)CommandType.NinshouJoutaiYoukyuuOutou)
-            {
-                var ninshouJoutai = (NinshouJoutai)(data[8] - 0x30);
-                var ninshouKanryouJoutai = (NinshouKanryouJoutai)(data[9] - 0x30);
-                var ninshouKekkaNgShousai = (NinshouKekkaNgShousai)(data[10] - 0x30);
-                var idLength = ((data[11] - 0x30) * 10) + (data[12] - 0x30);
-
-                return new NinshouJoutaiYoukyuuOutouCommand(
-                    idTanmatsuAddress,
-                    nyuutaishitsuHoukou,
-                    ninshouJoutai,
-                    ninshouKanryouJoutai,
-                    ninshouKekkaNgShousai,
-                    ExtractAndConvert(data, 13, idLength)
-                    );
+                return new OpenRdRequest();
             }
 
-            return new DummyCommand(idTanmatsuAddress, nyuutaishitsuHoukou); ;
-
+            return new DummyCommand();
         }
 
-        public static NinshouYoukyuuOutouCommand ResponseGenerate(
-            NinshouYoukyuuCommand ninshouYoukyuuCommand,
+        public static OpenRdResponse ResponseGenerate(
+            OpenRdRequest ninshouYoukyuuCommand,
             YoukyuuOutouKekka youkyuuOutouKekka,
             YoukyuuJuriNgSyousai youkyuuJuriNgSyousai,
              bool idtAdrError = false,
@@ -136,36 +94,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
              bool bccError = false
         )
         {
-            return new NinshouYoukyuuOutouCommand(
-                FixIdTanmatsuAddress(ninshouYoukyuuCommand.IdTanmatsuAddress, idtAdrError),
-                FixNyuutaishitsuHoukou(ninshouYoukyuuCommand.NyuutaishitsuHoukou, inoutDirError),
-                youkyuuOutouKekka,
-                youkyuuJuriNgSyousai,
-                FixRiyoushaId(ninshouYoukyuuCommand.Id, riyoushaIdError),
-                bccError
-                );
-        }
-
-        public static NinshouJoutaiYoukyuuOutouCommand ResponseGenerate(
-            NinshouJoutaiYoukyuuCommand ninshouJoutaiYoukyuuCommand,
-            NinshouJoutai ninshouJoutai,
-            NinshouKanryouJoutai ninshouKanryouJoutai,
-            NinshouKekkaNgShousai ninshouKekkaNgShousai,
-            string id,
-            bool idtAdrError = false,
-            bool inoutDirError = false,
-            bool riyoushaIdError = false,
-            bool bccError = false
-            )
-        {
-            return new NinshouJoutaiYoukyuuOutouCommand(
-                FixIdTanmatsuAddress(ninshouJoutaiYoukyuuCommand.IdTanmatsuAddress, idtAdrError),
-                FixNyuutaishitsuHoukou(ninshouJoutaiYoukyuuCommand.NyuutaishitsuHoukou, inoutDirError),
-                ninshouJoutai,
-                ninshouKanryouJoutai,
-                ninshouKekkaNgShousai,
-                FixRiyoushaId(id, riyoushaIdError),
-                bccError);
+            return new OpenRdResponse();
         }
 
         static string ExtractAndConvert(byte[] byteArray, int startIndex, int length)

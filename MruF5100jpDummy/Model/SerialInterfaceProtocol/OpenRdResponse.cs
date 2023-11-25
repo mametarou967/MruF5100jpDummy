@@ -18,7 +18,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         Nashi = 0,
     }
 
-    public class NinshouYoukyuuOutouCommand : Command
+    public class OpenRdResponse : Command
     {
         public YoukyuuOutouKekka YoukyuuOutouKekka { get; private set; }
         public YoukyuuJuriNgSyousai YoukyuuJuriNgSyousai { get; private set; }
@@ -39,26 +39,18 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             }
         }
 
-        public override CommandType CommandType => CommandType.NinshouYoukyuuOutou;
+        public override CommandType CommandType => CommandType.OpenRd;
 
-        protected override string CommadString =>
-            $"要求応答結果:{YoukyuuOutouKekka.GetStringValue()} " +
-            $"要求受理NG詳細:{YoukyuuJuriNgSyousai.GetStringValue()} " +
-            $"利用者ID:{Id}";
+        public override DenbunType DenbunType => DenbunType.Response;
 
-        public NinshouYoukyuuOutouCommand
-        (
-            int idTanmatsuAddress,
-            NyuutaishitsuHoukou nyuutaishitsuHoukou,
-            YoukyuuOutouKekka youkyuuOutouKekka,
-            YoukyuuJuriNgSyousai youkyuuJuriNgSyousai,
-            string id,
-            bool bccError = false
-        ) : base(idTanmatsuAddress, nyuutaishitsuHoukou, bccError)
-        {
-            YoukyuuOutouKekka = youkyuuOutouKekka;
-            YoukyuuJuriNgSyousai = youkyuuJuriNgSyousai;
-            Id = id;
-        }
+        public override int dataSize => 0;
+
+        public override byte Result => 0;
+
+        protected override string CommadString => "";
+
+        public OpenRdResponse
+        () 
+        {        }
     }
 }

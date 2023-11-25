@@ -8,15 +8,21 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
     public enum CommandType
     {
         [StringValue("ダミー")]
-        DummyCommand = 0,
-        [StringValue("認証要求")]
-        NinshouYoukyuu = 1,
-        [StringValue("認証要求応答")]
-        NinshouYoukyuuOutou = 2,
-        [StringValue("認証状態要求")]
-        NinshouJoutaiYoukyuu = 3,
-        [StringValue("認証状態要求応答")]
-        NinshouJoutaiYoukyuuOutou = 4
+        DummyCommand = 99,
+        [StringValue("OpenRdコマンド")]
+        OpenRd = 0x00,
+    }
+
+    public enum DenbunType
+    {
+        [StringValue("リクエスト")]
+        Request = 0x50,
+        [StringValue("レスポンス")]
+        Response = 0x51,
+        [StringValue("レポート")]
+        Report = 0x52,
+        [StringValue("特殊")]
+        Special = 0x53,
     }
 
     public enum NyuutaishitsuHoukou
@@ -34,18 +40,17 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public int IdTanmatsuAddress { get; private set; }
         public NyuutaishitsuHoukou NyuutaishitsuHoukou { get; private set; }
 
-        public Command(
-            int idTanmatsuAddress,
-            NyuutaishitsuHoukou nyuutaishitsuHoukou,
-            bool bccError = false
-           )
+        public Command()
         {
-            IdTanmatsuAddress = idTanmatsuAddress;
-            NyuutaishitsuHoukou = nyuutaishitsuHoukou;
-            BccError = bccError;
         }
 
         public abstract CommandType CommandType { get; }
+
+        public abstract DenbunType DenbunType { get; }
+
+        public abstract int dataSize { get; }
+
+        public abstract byte Result { get; }
 
         // public override abstract string ToString();
 
@@ -54,47 +59,43 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         protected abstract string CommadString { get; }
 
         private string BaseHeaderString =>
-            Common.Common.PaddingInBytes($"CMD: {CommandType.GetStringValue()}", PadType.Char, 36) +
-            $"ID端末ｱﾄﾞﾚｽ:{IdTanmatsuAddress} " +
-            $"入退室方向:{NyuutaishitsuHoukou.GetStringValue()} ";
+            Common.Common.PaddingInBytes($"CMD: {CommandType.GetStringValue()}", PadType.Char, 36);
 
-        private string BaseFooterString =>
-            $" BCCｴﾗｰ:{BccError}";
+        private string BaseFooterString => "";
 
 
         protected abstract byte[] CommandPayloadByteArray { get; }
 
         public byte[] ByteArray()
         {
-
             List<byte> data_tmp1 = new List<byte>();
-
-            var idTanmatsuAddress = IdTanmatsuAddress;
-            data_tmp1.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(idTanmatsuAddress)));
-
-            var nyuutaishitsuHoukou = NyuutaishitsuHoukou;
-            data_tmp1.Add((byte)(0x30 + nyuutaishitsuHoukou));
-            data_tmp1.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray((int)CommandType)));
+            var dataSizeLower = (byte)(dataSize % 256);
+            var dataSizeUpper = (byte)(dataSize / 256);
+            data_tmp1.Add(0x00);                 // 電文のバージョン番号 (0x00)固定
+            data_tmp1.Add((byte)DenbunType);     // 電文識別子 0x50:リクエスト 0x51:レスポンス
+            data_tmp1.Add(0x00);                 // ID (0x00)固定
+            data_tmp1.Add((byte)CommandType);    // コマンド番号
+            data_tmp1.Add(dataSizeLower);        // データサイズ下位（リトルエンディアン）
+            data_tmp1.Add(dataSizeUpper);        // データサイズ上位
+            data_tmp1.Add(Result);               // コマンド処理結果
+            data_tmp1.Add(0x00);                  // エラーコード いったん0
+            data_tmp1.Add(0x00);                  // エラーコード いったん0
+            data_tmp1.Add(0x00);                  // Reserve
+            data_tmp1.Add(0x00);                  // Reserve
+            data_tmp1.Add(0x00);                  // Reserve
+            data_tmp1.Add(0x00);                  // Reserve
+            data_tmp1.Add(0x00);                  // Reserve
+            data_tmp1.Add(0x00);                  // Reserve
+            data_tmp1.Add(0x00);                  // Reserve
             data_tmp1.AddRange(CommandPayloadByteArray);
 
-            List<byte> data_tmp2 = new List<byte>();
-
-            data_tmp2.AddRange(IntTo2ByteArray(data_tmp1.Count));
-            data_tmp2.AddRange(data_tmp1);
-            data_tmp2.Add(0x03); // ETX
-
+            var crc = CalculateCrc(data_tmp1.ToArray());
             List<byte> data = new List<byte>();
-
-            data.Add(0x02); // STX
-            data.AddRange(data_tmp2);
-
-            var bcc = XorBytes(data_tmp2.ToArray());
-            if (BccError)
-            {
-                byte all1 = 0xFF;
-                bcc = (byte)(bcc ^ all1);
-            }
-            data.Add(bcc); // BCC
+            var crcLower = (byte)(crc % 256);
+            var crcUpper = (byte)(crc / 256);
+            data.AddRange(data_tmp1);
+            data.Add(crcLower);
+            data.Add(crcUpper);
 
             return data.ToArray();
         }
@@ -144,6 +145,27 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                 result ^= b;
             }
             return result;
+        }
+
+        public static ushort CalculateCrc(byte[] buffer)
+        {
+            ushort crc = 0xffff;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                crc ^= buffer[i];
+                for (int j = 0; j < 8; j++)
+                {
+                    if ((crc & 1) != 0)
+                    {
+                        crc = (ushort)((crc >> 1) ^ 0x8408);
+                    }
+                    else
+                    {
+                        crc >>= 1;
+                    }
+                }
+            }
+            return (ushort)~crc;
         }
 
     }

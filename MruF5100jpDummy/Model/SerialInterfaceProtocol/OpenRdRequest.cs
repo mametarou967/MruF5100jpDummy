@@ -6,23 +6,24 @@ using System.Threading.Tasks;
 
 namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 {
-    public class DummyCommand : Command
+    public class OpenRdRequest : Command
     {
-        public override CommandType CommandType => CommandType.DummyCommand;
+        public string Id { get; private set; }
+
+        public override CommandType CommandType => CommandType.OpenRd;
 
         public override DenbunType DenbunType => DenbunType.Request;
 
-        public override int  dataSize => 0;
+        public override int dataSize => 0;
 
         public override byte Result => 0;
 
-        protected override byte[] CommandPayloadByteArray => new byte[] { };
+        protected override byte[] CommandPayloadByteArray => new byte[0];
 
         protected override string CommadString => "";
 
-        public DummyCommand()
+        public OpenRdRequest()
         {
-
         }
     }
 }

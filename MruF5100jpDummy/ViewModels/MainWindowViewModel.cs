@@ -29,23 +29,6 @@ namespace MruF5100jpDummy.ViewModels
             set { serialInterfaceProtocolManager.YoukyuuOutouKekka = value; }
         }
 
-        public NinshouJoutai NinshouJoutai
-        {
-            get => serialInterfaceProtocolManager.NinshouJoutai;
-            set { serialInterfaceProtocolManager.NinshouJoutai = value; }
-        }
-
-        public NinshouKanryouJoutai NinshouKanryouJoutai
-        {
-            get => serialInterfaceProtocolManager.NinshouKanryouJoutai;
-            set { serialInterfaceProtocolManager.NinshouKanryouJoutai = value; }
-        }
-
-        public NinshouKekkaNgShousai NinshouKekkaNgShousai
-        {
-            get => serialInterfaceProtocolManager.NinshouKekkaNgShousai;
-            set { serialInterfaceProtocolManager.NinshouKekkaNgShousai = value; }
-        }
 
         public string NinshouJoutaiYoukyuuOutouRiyoushaId
         {
@@ -60,7 +43,6 @@ namespace MruF5100jpDummy.ViewModels
             SerialStartButton = new DelegateCommand(SerialStartButtonExecute);
             SerialStopButton = new DelegateCommand(SerialStopButtonExecute);
             NinshouYoukyuuCommandTestSendButton = new DelegateCommand(NinshouYoukyuuCommandTestSendButtonExecute);
-            NinshouJoutaiYoukyuuCommandTestSendButton = new DelegateCommand(NinshouJoutaiYoukyuuCommandTestSendButtonExecute);
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
             IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
@@ -127,15 +109,10 @@ namespace MruF5100jpDummy.ViewModels
 
         private void NinshouYoukyuuCommandTestSendButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new NinshouYoukyuuCommand(1, NyuutaishitsuHoukou.Nyuushitsu, _ninshouYoukyuuRiyoushaId));
+            serialInterfaceProtocolManager.Send(new OpenRdRequest());
         }
 
-        public DelegateCommand NinshouJoutaiYoukyuuCommandTestSendButton { get; }
 
-        private void NinshouJoutaiYoukyuuCommandTestSendButtonExecute()
-        {
-            serialInterfaceProtocolManager.Send(new NinshouJoutaiYoukyuuCommand(1, NyuutaishitsuHoukou.Nyuushitsu));
-        }
 
         public DelegateCommand LogClearButton { get; }
 

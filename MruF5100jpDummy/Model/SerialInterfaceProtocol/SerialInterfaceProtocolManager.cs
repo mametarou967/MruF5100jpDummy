@@ -31,9 +31,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public bool IsRiyoushaIdErrorYoukyuuJoutaiOutou = false;
         public bool IsBccErrorYoukyuuJoutaiOutou = false;
         public uint YoukyuuJoutaiOutouJikanMs = 200;
-        public NinshouJoutai NinshouJoutai = NinshouJoutai.Syorikanryou;
-        public NinshouKanryouJoutai NinshouKanryouJoutai = NinshouKanryouJoutai.NinshouKekkaOk;
-        public NinshouKekkaNgShousai NinshouKekkaNgShousai = NinshouKekkaNgShousai.Nashi;
         public string RiyoushaId = "00043130";
 
         public SerialInterfaceProtocolManager(ILogWriteRequester logWriteRequester)
@@ -130,10 +127,10 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     var riyoushaIdError = false;
                     var bccError = false;
 
-                    if (receiveCommand.CommandType == CommandType.NinshouYoukyuu) isResponseEnable = IsResponseEnableYoukyuuOutou;
-                    else if (receiveCommand.CommandType == CommandType.NinshouJoutaiYoukyuu) isResponseEnable = IsResponseEnableYoukyuuJoutaiOutou;
+                    // if (receiveCommand.CommandType == CommandType.NinshouYoukyuu) isResponseEnable = IsResponseEnableYoukyuuOutou;
+                    // else if (receiveCommand.CommandType == CommandType.NinshouJoutaiYoukyuu) isResponseEnable = IsResponseEnableYoukyuuJoutaiOutou;
 
-                    if (receiveCommand.CommandType == CommandType.NinshouYoukyuu)
+                    if (receiveCommand.CommandType == CommandType.OpenRd)
                     {
                         outouJikanMs = YoukyuuOutouJikanMs;
                         idtAdrError = IsIdtAdrErrorYoukyuuOutou;
@@ -141,14 +138,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                         riyoushaIdError = IsRiyoushaIdErrorYoukyuuOutou;
                         bccError = IsBccErrorYoukyuuOutou;
 
-                    }
-                    else if (receiveCommand.CommandType == CommandType.NinshouJoutaiYoukyuu)
-                    {
-                        outouJikanMs = YoukyuuJoutaiOutouJikanMs;
-                        idtAdrError = IsIdtAdrErrorYoukyuuJoutaiOutou;
-                        inoutDirError = IsInoutDirErrorYoukyuuJoutaiOutou;
-                        riyoushaIdError = IsRiyoushaIdErrorYoukyuuJoutaiOutou;
-                        bccError = IsBccErrorYoukyuuJoutaiOutou;
                     }
 
                     if (idtAdrError) logWriteRequester.WriteRequest(LogLevel.Warning, $"ID端末アドレスエラー設定を反映して応答コマンドを作成します");
@@ -218,11 +207,11 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             bool riyoushaIdError = false,
             bool bccError = false)
         {
-            if (command.CommandType == CommandType.NinshouYoukyuu)
+            if (command.CommandType == CommandType.OpenRd)
             {
                 // 受信コマンドの応答を生成
                 var ninshouYoukyuuOutouCommand = CommandGenerator.ResponseGenerate(
-                    command as NinshouYoukyuuCommand,
+                    command as OpenRdRequest,
                     YoukyuuOutouKekka,
                     YoukyuuJuriNgSyousai.Nashi, // 一旦固定
                     idtAdrError,
@@ -233,25 +222,8 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
                 return ninshouYoukyuuOutouCommand;
             }
-            else if (command.CommandType == CommandType.NinshouJoutaiYoukyuu)
-            {
-                // 受信コマンドの応答を生成
-                var ninshouJoutaiYoukyuuOutouCommand = CommandGenerator.ResponseGenerate(
-                    command as NinshouJoutaiYoukyuuCommand,
-                    NinshouJoutai,
-                    NinshouKanryouJoutai,
-                    NinshouKekkaNgShousai,
-                    RiyoushaId,
-                    idtAdrError,
-                    inoutDirError,
-                    riyoushaIdError,
-                    bccError
-                    );
 
-                return ninshouJoutaiYoukyuuOutouCommand;
-            }
-
-            return new DummyCommand(0, NyuutaishitsuHoukou.Nyuushitsu);
+            return new DummyCommand();
         }
     }
 }
