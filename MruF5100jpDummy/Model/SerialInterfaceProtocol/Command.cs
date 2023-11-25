@@ -17,6 +17,8 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         StartInv = 0x20,
         [StringValue("StopInvコマンド")]
         StopInv = 0x21,
+        [StringValue("Pollingコマンド")]
+        Polling = 0x22,
     }
 
     public enum DenbunType

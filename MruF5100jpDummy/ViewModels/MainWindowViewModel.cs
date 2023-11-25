@@ -39,6 +39,7 @@ namespace MruF5100jpDummy.ViewModels
             CloseRdSendButton = new DelegateCommand(CloseRdSendSendButtonExecute);
             StartInvSendButton = new DelegateCommand(StartInvSendSendButtonExecute);
             StopInvSendButton = new DelegateCommand(StopInvSendSendButtonExecute);
+            PollingSendButton = new DelegateCommand(PollingSendSendButtonExecute);
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
             IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
@@ -95,6 +96,7 @@ namespace MruF5100jpDummy.ViewModels
         public DelegateCommand CloseRdSendButton { get; }
         public DelegateCommand StartInvSendButton { get; }
         public DelegateCommand StopInvSendButton { get; }
+        public DelegateCommand PollingSendButton { get; }
 
         // 認証要求関係
 
@@ -126,6 +128,10 @@ namespace MruF5100jpDummy.ViewModels
             serialInterfaceProtocolManager.Send(new StopInvRequest());
         }
 
+        private void PollingSendSendButtonExecute()
+        {
+            serialInterfaceProtocolManager.Send(new PollingRequest());
+        }
 
         public DelegateCommand LogClearButton { get; }
 

@@ -109,6 +109,17 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     return new StopInvResponse();
                 }
             }
+            else if (commandType == (byte)CommandType.Polling)
+            {
+                if (denbunType == (byte)DenbunType.Request)
+                {
+                    return new PollingRequest();
+                }
+                else if (denbunType == (byte)DenbunType.Response)
+                {
+                    return new PollingResponse();
+                }
+            }
 
             return new DummyCommand();
         }
@@ -139,6 +150,13 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         )
         {
             return new StopInvResponse();
+        }
+
+        public static PollingResponse ResponseGenerate(
+            PollingRequest startInvRequest
+        )
+        {
+            return new PollingResponse();
         }
 
         static string ExtractAndConvert(byte[] byteArray, int startIndex, int length)

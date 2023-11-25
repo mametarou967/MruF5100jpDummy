@@ -82,6 +82,12 @@
                 <Button Content="StopInv送信" Command="{Binding StopInvSendButton}"/>
                 <Border Width="20" Height="Auto"/>
             </WrapPanel>
+            <!-- Polling -->
+            <Label Content="■ StopInv" Margin="0 0 0 1"></Label>
+            <WrapPanel Margin="22 0 0 0 ">
+                <Button Content="Polling送信" Command="{Binding PollingSendButton}"/>
+                <Border Width="20" Height="Auto"/>
+            </WrapPanel>
             <!-- 認証要求応答 -->
             <Label Content="■ 認証要求応答" Margin="0 0 0 1"></Label>
             <WrapPanel Margin="22 0 0 0 ">

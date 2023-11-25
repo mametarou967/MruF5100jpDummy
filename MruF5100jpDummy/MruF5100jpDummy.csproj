@@ -72,6 +72,8 @@
     <Compile Include="Model\Logging\LogWriter.cs" />
     <Compile Include="Model\Logging\LogWriteRequester.cs" />
     <Compile Include="Model\SerialCom\SerialCom.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\PollingRequest.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\PollingResponse.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\StopInvResponse.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\StopInvRequest.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\StartInvResponse.cs" />

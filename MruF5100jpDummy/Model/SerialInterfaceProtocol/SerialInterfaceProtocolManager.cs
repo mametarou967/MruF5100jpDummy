@@ -188,6 +188,12 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     command as StopInvRequest
                 ); ;
             }
+            else if (command.CommandType == CommandType.Polling)
+            {
+                return CommandGenerator.ResponseGenerate(
+                    command as PollingRequest
+                ); ;
+            }
 
 
             return new DummyCommand();
