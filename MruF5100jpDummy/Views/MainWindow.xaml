@@ -21,9 +21,9 @@
                 <DataTemplate>
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Timestamp}" Margin="3"/>
+                            <TextBlock Text="{Binding Timestamp}" Margin="3" Foreground="Gray"/>
                             <Border Width="1" Margin="1"/>
-                            <TextBlock Text="{Binding Content}" Margin="3"/>
+                            <TextBlock Text="{Binding Content}" Margin="3" Foreground="{Binding ForegroundColor}"/>
                         </StackPanel>
                         <Border BorderBrush="LightGray" BorderThickness="0,0,0,1"/>
                     </StackPanel>
@@ -33,6 +33,8 @@
         <StackPanel Grid.Column="1">
             <WrapPanel Margin="0 0 0 0 ">
                 <Button Content="ログクリア" Command="{Binding LogClearButton}" Width="100" />
+                <Border Width="10" Height="Auto"/>
+                <CheckBox Content="ログスクロール" IsChecked="{Binding LogScroll}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </WrapPanel>
             <!-- シリアル通信 -->
             <Label Content="■ シリアル通信" Margin="0 0 0 1"></Label>
@@ -69,6 +71,7 @@
             <Label Content="■ 認証要求応答" Margin="0 0 0 1"></Label>
             <WrapPanel Margin="22 0 0 0 ">
                 <StackPanel>
+                    <CheckBox Content="応答有効" IsChecked="{Binding IsResponseEnableYoukyuuOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <WrapPanel Margin="0 0 0 0 ">
                         <Label Content="応答時間(ms):" />
                         <TextBox TextAlignment="Right" Text="{Binding YoukyuuOutouJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -78,6 +81,13 @@
                         <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementYoukyuuOutouJikanMsCommand}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </WrapPanel>
+                </StackPanel>
+                <Border Width="20" Height="Auto"/>
+                <StackPanel>
+                    <CheckBox Content="ID端末ｱﾄﾞﾚｽｴﾗｰ" IsChecked="{Binding IsIdtAdrErrorYoukyuuOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox Content="入退室方向ｴﾗｰ" IsChecked="{Binding IsInoutDirErrorYoukyuuOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox Content="利用者IDｴﾗｰ" IsChecked="{Binding IsRiyoushaIdErrorYoukyuuOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox Content="BCCエラー" IsChecked="{Binding IsBccErrorYoukyuuOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 </StackPanel>
                 <Border Width="20" Height="Auto"/>
                 <StackPanel>
@@ -97,6 +107,7 @@
             <Label Content="■ 認証状態要求応答" Margin="0 0 0 1"></Label>
             <WrapPanel Margin="22 0 0 0 ">
                 <StackPanel>
+                    <CheckBox Content="応答有効" IsChecked="{Binding IsResponseEnableYoukyuuJoutaiOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <WrapPanel Margin="0 0 0 0 ">
                         <Label Content="応答時間(ms):" />
                         <TextBox TextAlignment="Right" Text="{Binding YoukyuuJoutaiOutouJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -113,6 +124,13 @@
                     </WrapPanel>
                 </StackPanel>
                 <Border Width="20" Height="Auto"/>
+                <StackPanel>
+                    <CheckBox Content="ID端末ｱﾄﾞﾚｽｴﾗｰ" IsChecked="{Binding IsIdtAdrErrorYoukyuuJoutaiOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox Content="入退室方向ｴﾗｰ" IsChecked="{Binding IsInoutDirErrorYoukyuuJoutaiOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox Content="利用者IDｴﾗｰ" IsChecked="{Binding IsRiyoushaIdErrorYoukyuuJoutaiOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox Content="BCCエラー" IsChecked="{Binding IsBccErrorYoukyuuJoutaiOutou}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Border Width="120" Height="Auto"/>
                 <StackPanel>
                     <Label Content="認証状態:" Margin="0 0 0 1"></Label>
                     <RadioButton GroupName="YoukyuuJoutaiOutouNinshouJoutai" Content="処理なし" IsChecked="{Binding NinshouJoutai, ConverterParameter=Syorinashi, Converter={StaticResource EnumConverter}}"

@@ -1,4 +1,5 @@
-﻿using MruF5100jpDummy.Model.Logging;
+﻿using MruF5100jpDummy.Model.Common;
+using MruF5100jpDummy.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,29 +16,54 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
 
         // 要求応答プロパティ
-        public uint YoukyuuOutouJikanMs = 1000;
+        public bool IsResponseEnableYoukyuuOutou = true;
+        public bool IsIdtAdrErrorYoukyuuOutou = false;
+        public bool IsInoutDirErrorYoukyuuOutou = false;
+        public bool IsRiyoushaIdErrorYoukyuuOutou = false;
+        public bool IsBccErrorYoukyuuOutou = false;
+        public uint YoukyuuOutouJikanMs = 200;
         public YoukyuuOutouKekka YoukyuuOutouKekka = YoukyuuOutouKekka.YoukyuuJuriOk;
-        
+
         // 要求状態応答プロパティ
-        public uint YoukyuuJoutaiOutouJikanMs = 1000;
-        public NinshouJoutai NinshouJoutai = NinshouJoutai.Syorinashi;
-        public NinshouKanryouJoutai NinshouKanryouJoutai = NinshouKanryouJoutai.NinshouKekkaNashi;
+        public bool IsResponseEnableYoukyuuJoutaiOutou = true;
+        public bool IsIdtAdrErrorYoukyuuJoutaiOutou = false;
+        public bool IsInoutDirErrorYoukyuuJoutaiOutou = false;
+        public bool IsRiyoushaIdErrorYoukyuuJoutaiOutou = false;
+        public bool IsBccErrorYoukyuuJoutaiOutou = false;
+        public uint YoukyuuJoutaiOutouJikanMs = 200;
+        public NinshouJoutai NinshouJoutai = NinshouJoutai.Syorikanryou;
+        public NinshouKanryouJoutai NinshouKanryouJoutai = NinshouKanryouJoutai.NinshouKekkaOk;
         public NinshouKekkaNgShousai NinshouKekkaNgShousai = NinshouKekkaNgShousai.Nashi;
         public string RiyoushaId = "00043130";
 
-        public void ComStart(
-
-            string comPort,
-            ILogWriteRequester logWriteRequester)
+        public SerialInterfaceProtocolManager(ILogWriteRequester logWriteRequester)
         {
             this.logWriteRequester = logWriteRequester;
-            serialCom = new SerialCom.SerialCom(comPort, DataReceiveAction, logWriteRequester);
-            serialCom.StartCom();
+        }
+
+        public void ComStart(string comPort)
+        {
+            if ((serialCom != null) && serialCom.IsCommunicating)
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信中のため、新しい通信は開始しません");
+            }
+            else
+            {
+                serialCom = new SerialCom.SerialCom(comPort, DataReceiveAction, logWriteRequester);
+                serialCom.StartCom();
+            }
         }
 
         public void ComStop()
         {
-            serialCom?.StopCom();
+            if ((serialCom == null) || !(serialCom.IsCommunicating))
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、通信の停止処理は行いません");
+            }
+            else
+            {
+                serialCom?.StopCom();
+            }
         }
 
         public void Send(ICommand command)
@@ -47,11 +73,13 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
                 try
                 {
-                    var byteArray = command.ByteArray;
+                    var byteArray = command.ByteArray();
 
                     if (serialCom != null)
                     {
-                        logWriteRequester.WriteRequest("[送信] " + command.ToString());
+                        logWriteRequester.WriteRequest(LogLevel.Info, "[送信] " + command.ToString());
+
+                        // if (bccError) logWriteRequester.WriteRequest(LogLevel.Warning, "<i> bccError設定が有効のため、BCCエラーで送信します");
 
                         serialCom.Send(byteArray);
                     }
@@ -70,7 +98,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             datas.ToList().ForEach(receiveDataQueue.Enqueue);
 
 
-            while(receiveDataQueue.ToArray().Length != 0)
+            while (receiveDataQueue.ToArray().Length != 0)
             {
                 // 受信データの評価
                 var byteCheckResult = CommandGenerator.ByteCheck(receiveDataQueue.ToArray());
@@ -93,24 +121,59 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     // バイト列から受信コマンドを生成する
                     var receiveCommand = CommandGenerator.CommandGenerate(commandBytes.ToArray());
 
-                    logWriteRequester.WriteRequest("[受信] " + receiveCommand.ToString());
+                    logWriteRequester.WriteRequest(LogLevel.Info, "[受信] " + receiveCommand.ToString());
 
-                    var responseCommand = ResponseGenerate(receiveCommand);
+                    bool isResponseEnable = true;
+                    uint outouJikanMs = 500;
+                    var idtAdrError = false;
+                    var inoutDirError = false;
+                    var riyoushaIdError = false;
+                    var bccError = false;
 
-                    if(responseCommand.CommandType != CommandType.DummyCommand)
+                    if (receiveCommand.CommandType == CommandType.NinshouYoukyuu) isResponseEnable = IsResponseEnableYoukyuuOutou;
+                    else if (receiveCommand.CommandType == CommandType.NinshouJoutaiYoukyuu) isResponseEnable = IsResponseEnableYoukyuuJoutaiOutou;
+
+                    if (receiveCommand.CommandType == CommandType.NinshouYoukyuu)
                     {
-                        // 有効な応答コマンドが生成されているので任意の時間経過後応答する
-                        Task.Run(async () =>
+                        outouJikanMs = YoukyuuOutouJikanMs;
+                        idtAdrError = IsIdtAdrErrorYoukyuuOutou;
+                        inoutDirError = IsInoutDirErrorYoukyuuOutou;
+                        riyoushaIdError = IsRiyoushaIdErrorYoukyuuOutou;
+                        bccError = IsBccErrorYoukyuuOutou;
+
+                    }
+                    else if (receiveCommand.CommandType == CommandType.NinshouJoutaiYoukyuu)
+                    {
+                        outouJikanMs = YoukyuuJoutaiOutouJikanMs;
+                        idtAdrError = IsIdtAdrErrorYoukyuuJoutaiOutou;
+                        inoutDirError = IsInoutDirErrorYoukyuuJoutaiOutou;
+                        riyoushaIdError = IsRiyoushaIdErrorYoukyuuJoutaiOutou;
+                        bccError = IsBccErrorYoukyuuJoutaiOutou;
+                    }
+
+                    if (idtAdrError) logWriteRequester.WriteRequest(LogLevel.Warning, $"ID端末アドレスエラー設定を反映して応答コマンドを作成します");
+                    if (inoutDirError) logWriteRequester.WriteRequest(LogLevel.Warning, $"ID端末入退室方向エラー設定を反映して応答コマンドを作成します");
+                    if (riyoushaIdError) logWriteRequester.WriteRequest(LogLevel.Warning, $"利用者IDエラー設定を反映して応答コマンドを作成します");
+                    if (bccError) logWriteRequester.WriteRequest(LogLevel.Warning, $"BCCエラー設定を反映して応答コマンドを作成します");
+
+                    var responseCommand = ResponseGenerate(receiveCommand, idtAdrError, inoutDirError, riyoushaIdError, bccError);
+
+                    if (responseCommand.CommandType != CommandType.DummyCommand)
+                    {
+                        if (isResponseEnable)
                         {
-                            uint outouJikanMs = 1000;
+                            // 有効な応答コマンドが生成されているので任意の時間経過後応答する
+                            Task.Run(async () =>
+                            {
+                                await Task.Delay(TimeSpan.FromMilliseconds(outouJikanMs));
 
-                            if (responseCommand.CommandType == CommandType.NinshouYoukyuuOutou) outouJikanMs = YoukyuuOutouJikanMs;
-                            else if (responseCommand.CommandType == CommandType.NinshouJoutaiYoukyuuOutou) outouJikanMs = YoukyuuJoutaiOutouJikanMs;
-
-                            await Task.Delay(TimeSpan.FromMilliseconds(outouJikanMs));
-
-                            Send(responseCommand);
-                        });
+                                Send(responseCommand);
+                            });
+                        }
+                        else
+                        {
+                            logWriteRequester.WriteRequest(LogLevel.Warning, $"応答設定が行われていないため{receiveCommand.CommandType} のコマンドは送信しません");
+                        }
                     }
 
                 }
@@ -137,18 +200,23 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
                     if (!size.HasValue) continue;
 
-                    List<byte> commandBytes = new List<byte>();
-
                     // サイズ分デキューする
                     for (int i = 0; i < size.Value; i++)
                     {
                         receiveDataQueue.Dequeue();
                     }
+
+                    logWriteRequester.WriteRequest(LogLevel.Error, $"{ byteCheckResult.GetStringValue()} のためメッセージを破棄します");
                 }
             }
         }
 
-        ICommand ResponseGenerate(ICommand command)
+        ICommand ResponseGenerate(
+            ICommand command,
+            bool idtAdrError = false,
+            bool inoutDirError = false,
+            bool riyoushaIdError = false,
+            bool bccError = false)
         {
             if (command.CommandType == CommandType.NinshouYoukyuu)
             {
@@ -156,7 +224,11 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                 var ninshouYoukyuuOutouCommand = CommandGenerator.ResponseGenerate(
                     command as NinshouYoukyuuCommand,
                     YoukyuuOutouKekka,
-                    YoukyuuJuriNgSyousai.Nashi // 一旦固定
+                    YoukyuuJuriNgSyousai.Nashi, // 一旦固定
+                    idtAdrError,
+                    inoutDirError,
+                    riyoushaIdError,
+                    bccError
                     );
 
                 return ninshouYoukyuuOutouCommand;
@@ -169,7 +241,11 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     NinshouJoutai,
                     NinshouKanryouJoutai,
                     NinshouKekkaNgShousai,
-                    RiyoushaId
+                    RiyoushaId,
+                    idtAdrError,
+                    inoutDirError,
+                    riyoushaIdError,
+                    bccError
                     );
 
                 return ninshouJoutaiYoukyuuOutouCommand;

@@ -18,7 +18,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             {
                 List<byte> data = new List<byte>();
 
-                data.AddRange(ByteArrayToAsciiArray(IntTo2ByteArray(Id.Length)));
+                data.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(Id.Length)));
                 data.AddRange(ConvertDigitsToAsciiArray(Id));
 
                 return data.ToArray();

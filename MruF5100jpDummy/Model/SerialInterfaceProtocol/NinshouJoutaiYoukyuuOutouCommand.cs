@@ -56,7 +56,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                 data.Add((byte)(0x30 + NinshouJoutai));
                 data.Add((byte)(0x30 + NinshouKanryouJoutai));
                 data.Add((byte)(0x30 + NinshouKekkaNgShousai));
-                data.AddRange(ByteArrayToAsciiArray(IntTo2ByteArray(Id.Length)));
+                data.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(Id.Length)));
                 data.AddRange(ConvertDigitsToAsciiArray(Id));
 
                 return data.ToArray();
@@ -75,8 +75,9 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             NinshouJoutai ninshouJoutai,
             NinshouKanryouJoutai ninshouKanryouJoutai,
             NinshouKekkaNgShousai ninshouKekkaNgShousai,
-            string id
-            ) : base(idTanmatsuAddress, nyuutaishitsuHoukou)
+            string id,
+            bool bccError = false
+            ) : base(idTanmatsuAddress, nyuutaishitsuHoukou, bccError)
         {
             NinshouJoutai = ninshouJoutai;
             NinshouKanryouJoutai = ninshouKanryouJoutai;

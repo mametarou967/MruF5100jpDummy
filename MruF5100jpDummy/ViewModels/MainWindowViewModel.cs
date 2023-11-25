@@ -7,6 +7,7 @@ using MruF5100jpDummy.Model.SerialInterfaceProtocol;
 using MruF5100jpDummy.Model.SerialPortManager;
 using System;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 
 namespace MruF5100jpDummy.ViewModels
 {
@@ -22,7 +23,8 @@ namespace MruF5100jpDummy.ViewModels
         IEventAggregator _ea;
         LogWriter logWriter;
 
-        public YoukyuuOutouKekka YoukyuuOutouKekka {
+        public YoukyuuOutouKekka YoukyuuOutouKekka
+        {
             get => serialInterfaceProtocolManager.YoukyuuOutouKekka;
             set { serialInterfaceProtocolManager.YoukyuuOutouKekka = value; }
         }
@@ -53,6 +55,7 @@ namespace MruF5100jpDummy.ViewModels
 
         public MainWindowViewModel(IEventAggregator ea)
         {
+            serialInterfaceProtocolManager = new SerialInterfaceProtocolManager(new LogWriteRequester(ea));
             // コマンドの準備
             SerialStartButton = new DelegateCommand(SerialStartButtonExecute);
             SerialStopButton = new DelegateCommand(SerialStopButtonExecute);
@@ -70,20 +73,28 @@ namespace MruF5100jpDummy.ViewModels
             {
                 if (!string.IsNullOrEmpty(serialPort))
                 {
-                    _serialPortList.Add(new ComboBoxViewModel(Common.ExtractNumber(serialPort),serialPort));
+                    _serialPortList.Add(new ComboBoxViewModel(Common.ExtractNumber(serialPort), serialPort));
                 }
             });
 
             _ea = ea;
-            logWriter = new LogWriter(_ea,(Log log) =>
-            {
-                _logItems.Add(
-                    new LogItem()
-                    {
-                        Timestamp = log.dateTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                        Content = log.content
-                    });
-            });
+            logWriter = new LogWriter(_ea, (Log log) =>
+             {
+                 SolidColorBrush solidColorBrush = new SolidColorBrush(Colors.Black);
+
+                 if (log.logLevel == LogLevel.Error) solidColorBrush = new SolidColorBrush(Colors.Red);
+                 else if (log.logLevel == LogLevel.Warning) solidColorBrush = new SolidColorBrush(Colors.DarkOrange);
+                 else if (log.logLevel == LogLevel.Info) solidColorBrush = new SolidColorBrush(Colors.MediumBlue);
+                 else if (log.logLevel == LogLevel.Debug) solidColorBrush = new SolidColorBrush(Colors.Gray);
+
+                 _logItems.Add(
+                         new LogItem()
+                         {
+                             Timestamp = log.dateTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                             Content = log.content,
+                             ForegroundColor = solidColorBrush
+                         });
+             });
         }
 
         /// ボタン関係
@@ -92,10 +103,7 @@ namespace MruF5100jpDummy.ViewModels
 
         private void SerialStartButtonExecute()
         {
-            if (!string.IsNullOrEmpty(selectedSerialComPort))
-            {
-                serialInterfaceProtocolManager.ComStart(selectedSerialComPort, new LogWriteRequester(_ea));
-            }   
+            serialInterfaceProtocolManager.ComStart(selectedSerialComPort);
         }
 
         public DelegateCommand SerialStopButton { get; }
@@ -119,7 +127,7 @@ namespace MruF5100jpDummy.ViewModels
 
         private void NinshouYoukyuuCommandTestSendButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new NinshouYoukyuuCommand(1,NyuutaishitsuHoukou.Nyuushitsu, _ninshouYoukyuuRiyoushaId));
+            serialInterfaceProtocolManager.Send(new NinshouYoukyuuCommand(1, NyuutaishitsuHoukou.Nyuushitsu, _ninshouYoukyuuRiyoushaId));
         }
 
         public DelegateCommand NinshouJoutaiYoukyuuCommandTestSendButton { get; }
@@ -134,6 +142,12 @@ namespace MruF5100jpDummy.ViewModels
         private void LogClearButtonExecute()
         {
             LogItems = new ObservableCollection<LogItem>();
+        }
+
+        public bool LogScroll
+        {
+            get { return logWriter.LogUpdatedEventFlag; }
+            set { logWriter.LogUpdatedEventFlag = value; }
         }
 
         /// Combo Box
@@ -158,7 +172,7 @@ namespace MruF5100jpDummy.ViewModels
             catch { }
         }
 
-        SerialInterfaceProtocolManager serialInterfaceProtocolManager = new SerialInterfaceProtocolManager();
+        SerialInterfaceProtocolManager serialInterfaceProtocolManager;
         String selectedSerialComPort = "";
 
         ObservableCollection<LogItem> _logItems =
@@ -169,7 +183,14 @@ namespace MruF5100jpDummy.ViewModels
             set { SetProperty(ref _logItems, value); }
         }
 
-        // 要求応答時間
+        // 認証要求応答有効
+        public bool IsResponseEnableYoukyuuOutou
+        {
+            get { return serialInterfaceProtocolManager.IsResponseEnableYoukyuuOutou; }
+            set { serialInterfaceProtocolManager.IsResponseEnableYoukyuuOutou = value; }
+        }
+
+        // 認証要求応答時間
         public uint YoukyuuOutouJikanMs
         {
             get { return serialInterfaceProtocolManager.YoukyuuOutouJikanMs; }
@@ -181,18 +202,55 @@ namespace MruF5100jpDummy.ViewModels
 
         private void IncrementYoukyuuOutouJikanMsValueExecute()
         {
-            if (YoukyuuOutouJikanMs <= 9000)
+            if (YoukyuuOutouJikanMs <= 9900)
             {
-                YoukyuuOutouJikanMs = YoukyuuOutouJikanMs + 1000;
+                YoukyuuOutouJikanMs = YoukyuuOutouJikanMs + 100;
             }
         }
 
         private void DecrementYoukyuuOutouJikanMsValueExecute()
         {
-            if (YoukyuuOutouJikanMs >= 1000)
+            if (YoukyuuOutouJikanMs >= 100)
             {
-                YoukyuuOutouJikanMs = YoukyuuOutouJikanMs - 1000;
+                YoukyuuOutouJikanMs = YoukyuuOutouJikanMs - 100;
             }
+        }
+
+        // 認証要求応答BCCエラー
+        public bool IsBccErrorYoukyuuOutou
+        {
+            get { return serialInterfaceProtocolManager.IsBccErrorYoukyuuOutou; }
+            set { serialInterfaceProtocolManager.IsBccErrorYoukyuuOutou = value; }
+        }
+
+        // 認証要求応答ID端末アドレスエラー
+        public bool IsIdtAdrErrorYoukyuuOutou
+        {
+            get { return serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuOutou; }
+            set { serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuOutou = value; }
+        }
+
+        // 認証要求応答入退室方向エラー
+        public bool IsInoutDirErrorYoukyuuOutou
+        {
+            get { return serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuOutou; }
+            set { serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuOutou = value; }
+        }
+
+        // 認証要求応答利用者IDエラー
+        public bool IsRiyoushaIdErrorYoukyuuOutou
+        {
+            get { return serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuOutou; }
+            set { serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuOutou = value; }
+        }
+
+        // -------------------------------------------------------------------------------
+
+        // 認証状態要求応答有効
+        public bool IsResponseEnableYoukyuuJoutaiOutou
+        {
+            get { return serialInterfaceProtocolManager.IsResponseEnableYoukyuuJoutaiOutou; }
+            set { serialInterfaceProtocolManager.IsResponseEnableYoukyuuJoutaiOutou = value; }
         }
 
         // 要求状態応答時間
@@ -207,18 +265,47 @@ namespace MruF5100jpDummy.ViewModels
 
         private void IncrementYoukyuuJoutaiOutouJikanMsValueExecute()
         {
-            if(YoukyuuJoutaiOutouJikanMs <= 9000)
+            if (YoukyuuJoutaiOutouJikanMs <= 9900)
             {
-                YoukyuuJoutaiOutouJikanMs = YoukyuuJoutaiOutouJikanMs + 1000;
+                YoukyuuJoutaiOutouJikanMs = YoukyuuJoutaiOutouJikanMs + 100;
             }
         }
 
         private void DecrementYoukyuuJoutaiOutouJikanMsValueExecute()
         {
-            if(YoukyuuJoutaiOutouJikanMs >= 1000)
+            if (YoukyuuJoutaiOutouJikanMs >= 100)
             {
-                YoukyuuJoutaiOutouJikanMs = YoukyuuJoutaiOutouJikanMs - 1000;
+                YoukyuuJoutaiOutouJikanMs = YoukyuuJoutaiOutouJikanMs - 100;
             }
+        }
+
+
+        // 認証状態要求応答ID端末アドレスエラー
+        public bool IsIdtAdrErrorYoukyuuJoutaiOutou
+        {
+            get { return serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuJoutaiOutou; }
+            set { serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuJoutaiOutou = value; }
+        }
+
+        // 認証状態要求応答入退室方向エラー
+        public bool IsInoutDirErrorYoukyuuJoutaiOutou
+        {
+            get { return serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuJoutaiOutou; }
+            set { serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuJoutaiOutou = value; }
+        }
+
+        // 認証要求応答利用者IDエラー
+        public bool IsRiyoushaIdErrorYoukyuuJoutaiOutou
+        {
+            get { return serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuJoutaiOutou; }
+            set { serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuJoutaiOutou = value; }
+        }
+
+        // 認証状態要求応答BCCエラー
+        public bool IsBccErrorYoukyuuJoutaiOutou
+        {
+            get { return serialInterfaceProtocolManager.IsBccErrorYoukyuuJoutaiOutou; }
+            set { serialInterfaceProtocolManager.IsBccErrorYoukyuuJoutaiOutou = value; }
         }
     }
 }

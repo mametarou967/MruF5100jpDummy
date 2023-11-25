@@ -2,6 +2,6 @@
 {
     public interface ILogWriteRequester
     {
-        void WriteRequest(string message);
+        void WriteRequest(LogLevel logLevel, string message);
     }
 }

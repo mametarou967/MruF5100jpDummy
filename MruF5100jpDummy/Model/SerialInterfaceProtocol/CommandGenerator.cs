@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MruF5100jpDummy.Model.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,13 +9,21 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 {
     public enum ByteCheckResult
     {
+
+        [StringValue("OK")]
         Ok,
-        NgNoByte,             // データなし
-        NgNoStx,              // 先頭がSTXでない(->先頭のデータを破棄)
-        NgHasNoLengthField,   // messageの長さフィールドを持っていない(3バイトより短い)(->データがたまるまで待つ)
-        NgMessageIncompleted, // 長さフィールド分のメッセージを持っていない(->データがたまるまで待つ)
-        NgNoEtx,              // 終端がETXでない(->メッセージの破棄)
-        NgBccError,           // BCCｴﾗｰ(->メッセージの破棄)
+        [StringValue("データなし")]
+        NgNoByte,
+        [StringValue("先頭がSTXでない")]
+        NgNoStx,
+        [StringValue("messageの長さフィールドを持っていない(3バイトより短い)")]
+        NgHasNoLengthField,
+        [StringValue("長さフィールド分のメッセージを持っていない")]
+        NgMessageIncompleted,
+        [StringValue("終端がETXでない")]
+        NgNoEtx,
+        [StringValue("BCCエラー")]
+        NgBccError,
     }
 
 
@@ -36,7 +45,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             if (data[3 + messageLength] != 0x03 /* ETX */ ) return ByteCheckResult.NgNoEtx;
 
             byte bcc = 0;
-            for(int index = 1;index < (3 + messageLength + 1);index++)
+            for (int index = 1; index < (3 + messageLength + 1); index++)
             {
                 bcc ^= data[index];
             }
@@ -75,7 +84,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     ExtractAndConvert(data, 10, idLength)
                     );
             }
-            else if(commandType == (int)CommandType.NinshouYoukyuuOutou)
+            else if (commandType == (int)CommandType.NinshouYoukyuuOutou)
             {
                 var youkyuuOutouKekka = (YoukyuuOutouKekka)(data[8] - 0x30);
                 var youkyuuJuriNgSyousai = (YoukyuuJuriNgSyousai)(data[9] - 0x30);
@@ -89,14 +98,14 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     ExtractAndConvert(data, 12, idLength)
                     );
             }
-            else if(commandType == (int)CommandType.NinshouJoutaiYoukyuu)
+            else if (commandType == (int)CommandType.NinshouJoutaiYoukyuu)
             {
                 return new NinshouJoutaiYoukyuuCommand(
                     idTanmatsuAddress,
                     nyuutaishitsuHoukou
                     );
             }
-            else if(commandType == (int)CommandType.NinshouJoutaiYoukyuuOutou)
+            else if (commandType == (int)CommandType.NinshouJoutaiYoukyuuOutou)
             {
                 var ninshouJoutai = (NinshouJoutai)(data[8] - 0x30);
                 var ninshouKanryouJoutai = (NinshouKanryouJoutai)(data[9] - 0x30);
@@ -120,16 +129,20 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public static NinshouYoukyuuOutouCommand ResponseGenerate(
             NinshouYoukyuuCommand ninshouYoukyuuCommand,
             YoukyuuOutouKekka youkyuuOutouKekka,
-            YoukyuuJuriNgSyousai youkyuuJuriNgSyousai
-
+            YoukyuuJuriNgSyousai youkyuuJuriNgSyousai,
+             bool idtAdrError = false,
+             bool inoutDirError = false,
+             bool riyoushaIdError = false,
+             bool bccError = false
         )
         {
             return new NinshouYoukyuuOutouCommand(
-                ninshouYoukyuuCommand.IdTanmatsuAddress,
-                ninshouYoukyuuCommand.NyuutaishitsuHoukou,
+                FixIdTanmatsuAddress(ninshouYoukyuuCommand.IdTanmatsuAddress, idtAdrError),
+                FixNyuutaishitsuHoukou(ninshouYoukyuuCommand.NyuutaishitsuHoukou, inoutDirError),
                 youkyuuOutouKekka,
                 youkyuuJuriNgSyousai,
-                ninshouYoukyuuCommand.Id
+                FixRiyoushaId(ninshouYoukyuuCommand.Id, riyoushaIdError),
+                bccError
                 );
         }
 
@@ -138,16 +151,21 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             NinshouJoutai ninshouJoutai,
             NinshouKanryouJoutai ninshouKanryouJoutai,
             NinshouKekkaNgShousai ninshouKekkaNgShousai,
-            string id
+            string id,
+            bool idtAdrError = false,
+            bool inoutDirError = false,
+            bool riyoushaIdError = false,
+            bool bccError = false
             )
         {
             return new NinshouJoutaiYoukyuuOutouCommand(
-                ninshouJoutaiYoukyuuCommand.IdTanmatsuAddress,
-                ninshouJoutaiYoukyuuCommand.NyuutaishitsuHoukou,
+                FixIdTanmatsuAddress(ninshouJoutaiYoukyuuCommand.IdTanmatsuAddress, idtAdrError),
+                FixNyuutaishitsuHoukou(ninshouJoutaiYoukyuuCommand.NyuutaishitsuHoukou, inoutDirError),
                 ninshouJoutai,
                 ninshouKanryouJoutai,
                 ninshouKekkaNgShousai,
-                id);
+                FixRiyoushaId(id, riyoushaIdError),
+                bccError);
         }
 
         static string ExtractAndConvert(byte[] byteArray, int startIndex, int length)
@@ -170,5 +188,32 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             var str = System.Text.Encoding.GetEncoding("shift_jis").GetString(convertedChars);
             return str;
         }
+
+        static private int FixIdTanmatsuAddress(int idTanmatsuAddress, bool idtAdrError) =>
+            (idtAdrError) ? idTanmatsuAddress + 1 : idTanmatsuAddress;
+
+        static private NyuutaishitsuHoukou FixNyuutaishitsuHoukou(NyuutaishitsuHoukou nyuutaishitsuHoukou, bool inoutDirError)
+        {
+            NyuutaishitsuHoukou fixNyuutaishitsuHoukou = nyuutaishitsuHoukou;
+
+            if (inoutDirError)
+            {
+                if (fixNyuutaishitsuHoukou == NyuutaishitsuHoukou.Nyuushitsu) fixNyuutaishitsuHoukou = NyuutaishitsuHoukou.Taishitsu;
+                else fixNyuutaishitsuHoukou = NyuutaishitsuHoukou.Nyuushitsu;
+            }
+
+            return fixNyuutaishitsuHoukou;
         }
+
+        static private string FixRiyoushaId(string riyoushaId, bool riyoushaIdError)
+        {
+            // 文字列を整数に変換して1増やす
+            long riyoushaNumber = long.Parse(riyoushaId);
+            if (riyoushaIdError) riyoushaNumber++;
+
+            // 数値を文字列に戻す時、桁数を保持するためにPadLeftを使用
+            return riyoushaNumber.ToString().PadLeft(riyoushaId.Length, '0');
+
+        }
+    }
 }

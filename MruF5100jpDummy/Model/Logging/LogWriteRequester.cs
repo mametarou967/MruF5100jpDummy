@@ -13,7 +13,7 @@ namespace MruF5100jpDummy.Model.Logging
             _ea = ea;
         }
 
-        public void WriteRequest(string message)
+        public void WriteRequest(LogLevel logLevel, string message)
         {
             try
             {
@@ -23,7 +23,8 @@ namespace MruF5100jpDummy.Model.Logging
                     new Log()
                     {
                         dateTime = DateTime.Now,
-                        content = message
+                        content = message,
+                        logLevel = logLevel
                     });
                 });
             }

@@ -5,6 +5,8 @@ namespace MruF5100jpDummy.Model.Logging
 {
     class LogWriter
     {
+        public bool LogUpdatedEventFlag { get; set; } = true;
+
         IEventAggregator _ea;
         Action<Log> logWrite;
 
@@ -19,7 +21,7 @@ namespace MruF5100jpDummy.Model.Logging
         public void Write(Log log)
         {
             logWrite(log);
-            _ea.GetEvent<LogUpdated>().Publish(true);
+            if (LogUpdatedEventFlag) _ea.GetEvent<LogUpdated>().Publish(true);
         }
     }
 }

@@ -10,8 +10,8 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
     {
         CommandType CommandType { get; }
 
-        byte[] ByteArray { get; }
-        
+        byte[] ByteArray();
+
         string ToString();
     }
 }

@@ -19,6 +19,16 @@ namespace MruF5100jpDummy.Model.SerialCom
         ILogWriteRequester logWriteRequester;
         Action<byte[]> dataReceiveAction;
 
+        public bool IsCommunicating
+        {
+            get
+            {
+                if (serialPort == null) return false;
+                return serialPort.IsOpen;
+            }
+        }
+
+
         public SerialCom(
             string comport,
             Action<byte[]> dataReceiveAction,
@@ -31,22 +41,50 @@ namespace MruF5100jpDummy.Model.SerialCom
 
         public bool StartCom()
         {
-            if (serialPort != null || cancellationTokenSource != null) return false;
+            if (String.IsNullOrEmpty(comport))
+            {
+                logWriteRequester.WriteRequest(
+                LogLevel.Error,
+                $"comportが空白やnullのため通信を開始することができません");
+                return false;
+            }
 
-            serialPort = new SerialPort(comport, 115200, Parity.None, 8, StopBits.One);
-            serialPort.Open();
+            try
+            {
+                serialPort = new SerialPort(comport, 19200);
+                serialPort.Open();
+            }
+            catch (Exception ex)
+            {
+                logWriteRequester.WriteRequest(
+                LogLevel.Error,
+                $"[例外-ﾒｯｾｰｼﾞ] " + $"{ex.Message} ");
+                logWriteRequester.WriteRequest(
+                LogLevel.Error,
+                $"[例外-ｱﾌﾟﾘｹｰｼｮﾝ] " + $"{ex.Source} ");
+                logWriteRequester.WriteRequest(
+                LogLevel.Error,
+                $"[例外-ｽﾀｯｸﾄﾚｰｽ] " + $"{ex.StackTrace} ");
+                logWriteRequester.WriteRequest(
+                LogLevel.Error,
+                $"[例外-ﾒｿｯﾄﾞ] " + $"{ex.TargetSite} ");
+
+                return false;
+            }
 
             logWriteRequester.WriteRequest(
-                $"[COM-START1] " +
-                $"PortName:{serialPort.PortName} " +
-                $"OpenStatus:{serialPort.IsOpen} ");
+            LogLevel.Info,
+            $"[COM-START1] " +
+            $"PortName:{serialPort.PortName} " +
+            $"OpenStatus:{serialPort.IsOpen} ");
 
             logWriteRequester.WriteRequest(
-                $"[COM-START2] " +
-                $"DataBits:{serialPort.DataBits} " +
-                $"BaudRate:{serialPort.BaudRate} " +
-                $"Parity:{serialPort.Parity} " +
-                $"StopBits:{serialPort.StopBits}" );
+            LogLevel.Info,
+            $"[COM-START2] " +
+            $"DataBits:{serialPort.DataBits} " +
+            $"BaudRate:{serialPort.BaudRate} " +
+            $"Parity:{serialPort.Parity} " +
+            $"StopBits:{serialPort.StopBits}");
 
             cancellationTokenSource = new CancellationTokenSource();
 
@@ -60,7 +98,7 @@ namespace MruF5100jpDummy.Model.SerialCom
                         serialPort.Read(receivedBytes, 0, receivedBytes.Length);
 
                         // 受信データバイナリログ出力
-                        logWriteRequester.WriteRequest("[RCV] " + string.Join(" ", receivedBytes.Select(b => $"0x{b:X2}")));
+                        logWriteRequester.WriteRequest(LogLevel.Debug, "[RCV] " + string.Join(" ", receivedBytes.Select(b => $"0x{b:X2}")));
 
                         dataReceiveAction?.Invoke(receivedBytes);
                     }
@@ -69,7 +107,7 @@ namespace MruF5100jpDummy.Model.SerialCom
                     // sendQueueを調べてデータがあればserialPortに送信する
                     while (!sendQueue.IsEmpty)
                     {
-                        if(sendQueue.TryDequeue(out byte data))
+                        if (sendQueue.TryDequeue(out byte data))
                         {
                             sendList.Add(data);
                         }
@@ -80,8 +118,7 @@ namespace MruF5100jpDummy.Model.SerialCom
                         serialPort.Write(sendList.ToArray(), 0, sendList.Count);
 
                         // 送信データバイナリログ出力
-                        logWriteRequester.WriteRequest("[SND] " + string.Join(" ", sendList.ToArray().Select(b => $"0x{b:X2}")));
-
+                        logWriteRequester.WriteRequest(LogLevel.Debug, "[SND] " + string.Join(" ", sendList.ToArray().Select(b => $"0x{b:X2}")));
                     }
 
                     await Task.Delay(100); // Adjust the delay duration as needed
@@ -114,9 +151,10 @@ namespace MruF5100jpDummy.Model.SerialCom
             {
                 serialPort.Close();
                 logWriteRequester.WriteRequest(
-                    $"[COM-STOP ] " +
-                    $"PortName:{serialPort.PortName} " +
-                    $"OpenStatus:{serialPort.IsOpen} ");
+                LogLevel.Info,
+                $"[COM-STOP ] " +
+                $"PortName:{serialPort.PortName} " +
+                $"OpenStatus:{serialPort.IsOpen} ");
                 serialPort.Dispose();
                 serialPort = null;
             }

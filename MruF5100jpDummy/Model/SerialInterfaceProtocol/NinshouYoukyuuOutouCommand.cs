@@ -32,7 +32,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
                 data.Add((byte)(0x30 + YoukyuuOutouKekka));
                 data.Add((byte)(0x30 + YoukyuuJuriNgSyousai)); // 仮固定
-                data.AddRange(ByteArrayToAsciiArray(IntTo2ByteArray(Id.Length)));
+                data.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(Id.Length)));
                 data.AddRange(ConvertDigitsToAsciiArray(Id));
 
                 return data.ToArray();
@@ -41,7 +41,7 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
         public override CommandType CommandType => CommandType.NinshouYoukyuuOutou;
 
-        protected override string CommadString => 
+        protected override string CommadString =>
             $"要求応答結果:{YoukyuuOutouKekka.GetStringValue()} " +
             $"要求受理NG詳細:{YoukyuuJuriNgSyousai.GetStringValue()} " +
             $"利用者ID:{Id}";
@@ -52,8 +52,9 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
             NyuutaishitsuHoukou nyuutaishitsuHoukou,
             YoukyuuOutouKekka youkyuuOutouKekka,
             YoukyuuJuriNgSyousai youkyuuJuriNgSyousai,
-            string id
-        ) : base(idTanmatsuAddress, nyuutaishitsuHoukou)
+            string id,
+            bool bccError = false
+        ) : base(idTanmatsuAddress, nyuutaishitsuHoukou, bccError)
         {
             YoukyuuOutouKekka = youkyuuOutouKekka;
             YoukyuuJuriNgSyousai = youkyuuJuriNgSyousai;
