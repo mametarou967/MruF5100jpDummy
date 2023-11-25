@@ -58,10 +58,16 @@
                     </i:Interaction.Triggers>
                 </ComboBox>
             </WrapPanel>
-            <!-- 認証要求 -->
+            <!-- OpenRd -->
             <Label Content="■ OpenRd" Margin="0 0 0 1"></Label>
             <WrapPanel Margin="22 0 0 0 ">
                 <Button Content="OpenRd送信" Command="{Binding OpenRdSendButton}"/>
+                <Border Width="20" Height="Auto"/>
+            </WrapPanel>
+            <!-- CloseRd -->
+            <Label Content="■ OpenRd" Margin="0 0 0 1"></Label>
+            <WrapPanel Margin="22 0 0 0 ">
+                <Button Content="CloseRd送信" Command="{Binding CloseRdSendButton}"/>
                 <Border Width="20" Height="Auto"/>
             </WrapPanel>
             <!-- 認証要求応答 -->

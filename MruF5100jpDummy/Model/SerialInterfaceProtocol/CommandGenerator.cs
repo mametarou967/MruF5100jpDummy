@@ -82,21 +82,33 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
                     return new OpenRdResponse();
                 }
             }
+            else if (commandType == (byte)CommandType.CloseRd)
+            {
+                if (denbunType == (byte)DenbunType.Request)
+                {
+                    return new CloseRdRequest();
+                }
+                else if (denbunType == (byte)DenbunType.Response)
+                {
+                    return new CloseRdResponse();
+                }
+            }
 
             return new DummyCommand();
         }
 
         public static OpenRdResponse ResponseGenerate(
-            OpenRdRequest ninshouYoukyuuCommand,
-            YoukyuuOutouKekka youkyuuOutouKekka,
-            YoukyuuJuriNgSyousai youkyuuJuriNgSyousai,
-             bool idtAdrError = false,
-             bool inoutDirError = false,
-             bool riyoushaIdError = false,
-             bool bccError = false
+            OpenRdRequest ninshouYoukyuuCommand
         )
         {
             return new OpenRdResponse();
+        }
+
+        public static CloseRdResponse ResponseGenerate(
+            CloseRdRequest ninshouYoukyuuCommand
+        )
+        {
+            return new CloseRdResponse();
         }
 
         static string ExtractAndConvert(byte[] byteArray, int startIndex, int length)

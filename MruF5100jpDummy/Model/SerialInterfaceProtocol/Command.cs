@@ -11,6 +11,8 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         DummyCommand = 99,
         [StringValue("OpenRdコマンド")]
         OpenRd = 0x00,
+        [StringValue("CloseRdコマンド")]
+        CloseRd = 0x01,
     }
 
     public enum DenbunType

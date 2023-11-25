@@ -76,7 +76,9 @@
     <Compile Include="Model\SerialInterfaceProtocol\CommandGenerator.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\DummyCommand.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\ICommand.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\CloseRdRequest.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\OpenRdRequest.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\CloseRdResponse.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\OpenRdResponse.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\SerialInterfaceProtocolManager.cs" />
     <Compile Include="Model\SerialPortManager\SerialPortManager.cs" />

@@ -22,7 +22,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         public bool IsRiyoushaIdErrorYoukyuuOutou = false;
         public bool IsBccErrorYoukyuuOutou = false;
         public uint YoukyuuOutouJikanMs = 200;
-        public YoukyuuOutouKekka YoukyuuOutouKekka = YoukyuuOutouKekka.YoukyuuJuriOk;
 
         // 要求状態応答プロパティ
         public bool IsResponseEnableYoukyuuJoutaiOutou = true;
@@ -167,15 +166,17 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
         {
             if (command.CommandType == CommandType.OpenRd)
             {
-                // 受信コマンドの応答を生成
-                var ninshouYoukyuuOutouCommand = CommandGenerator.ResponseGenerate(
-                    command as OpenRdRequest,
-                    YoukyuuOutouKekka,
-                    YoukyuuJuriNgSyousai.Nashi // 一旦固定
-                    );
-
-                return ninshouYoukyuuOutouCommand;
+                return CommandGenerator.ResponseGenerate(
+                    command as OpenRdRequest
+                ); ;
+            } 
+            else if(command.CommandType == CommandType.CloseRd)
+            {
+                return CommandGenerator.ResponseGenerate(
+                    command as CloseRdRequest
+                ); ;
             }
+                    
 
             return new DummyCommand();
         }

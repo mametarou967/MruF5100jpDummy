@@ -23,13 +23,6 @@ namespace MruF5100jpDummy.ViewModels
         IEventAggregator _ea;
         LogWriter logWriter;
 
-        public YoukyuuOutouKekka YoukyuuOutouKekka
-        {
-            get => serialInterfaceProtocolManager.YoukyuuOutouKekka;
-            set { serialInterfaceProtocolManager.YoukyuuOutouKekka = value; }
-        }
-
-
         public string NinshouJoutaiYoukyuuOutouRiyoushaId
         {
             get => serialInterfaceProtocolManager.RiyoushaId;
@@ -43,6 +36,7 @@ namespace MruF5100jpDummy.ViewModels
             SerialStartButton = new DelegateCommand(SerialStartButtonExecute);
             SerialStopButton = new DelegateCommand(SerialStopButtonExecute);
             OpenRdSendButton = new DelegateCommand(OpenRdSendSendButtonExecute);
+            CloseRdSendButton = new DelegateCommand(CloseRdSendSendButtonExecute);
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
             IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
@@ -96,6 +90,7 @@ namespace MruF5100jpDummy.ViewModels
         }
 
         public DelegateCommand OpenRdSendButton { get; }
+        public DelegateCommand CloseRdSendButton { get; }
 
         // 認証要求関係
 
@@ -110,6 +105,11 @@ namespace MruF5100jpDummy.ViewModels
         private void OpenRdSendSendButtonExecute()
         {
             serialInterfaceProtocolManager.Send(new OpenRdRequest());
+        }
+
+        private void CloseRdSendSendButtonExecute()
+        {
+            serialInterfaceProtocolManager.Send(new CloseRdRequest());
         }
 
 

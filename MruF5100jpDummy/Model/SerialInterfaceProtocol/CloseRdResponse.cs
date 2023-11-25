@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 {
-    public class OpenRdResponse : Command
+    public class CloseRdResponse : Command
     {
         public string Id { get; private set; }
 
         protected override byte[] CommandPayloadByteArray => new byte[0];
 
-        public override CommandType CommandType => CommandType.OpenRd;
+        public override CommandType CommandType => CommandType.CloseRd;
 
         public override DenbunType DenbunType => DenbunType.Response;
 
@@ -19,6 +19,6 @@ namespace MruF5100jpDummy.Model.SerialInterfaceProtocol
 
         protected override string CommadString => "";
 
-        public OpenRdResponse(){}
+        public CloseRdResponse(){}
     }
 }
